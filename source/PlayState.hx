@@ -62,7 +62,17 @@ import ui.Mobilecontrols;
 #end
 
 using StringTools;
-
+typedef somethingchange =
+{
+	
+	主界面的左下角第一行文本:String,
+	主界面的左下角第二行文本:String,
+	要不要用C键:Bool,
+	机器人的文本:String,
+	开头人物长:Float,
+	开头人物宽:Float,
+	第一次进入游戏时的那个小黑幕中的文字:String
+}
 class PlayState extends MusicBeatState
 {
 	public static var STRUM_X = 42;
@@ -335,6 +345,8 @@ class PlayState extends MusicBeatState
 					curStage = 'school';
 				case 'thorns':
 					curStage = 'schoolEvil';
+				case 'meet' | 'Impulse' | 'change':
+					curStage = '1';
 				default:
 					curStage = 'stage';
 			}
@@ -543,7 +555,26 @@ class PlayState extends MusicBeatState
 
 				var evilSnow:BGSprite = new BGSprite('christmas/evilSnow', -200, 700);
 				add(evilSnow);
-
+				/*setScrollFactor('3', 1, 1)
+setScrollFactor('2', 1.02, 1.02)
+setScrollFactor('1', 1.06, 1.06)*/
+            case '1': // 轩恪的！
+            var somethingchangelol:somethingchange = Json.parse(Paths.getTextFromFile('images/mainEditor.json'));
+            var xuankemade:BGSprite = new BGSprite('QWQ/3', -1300,-400);
+            var xuankemade1:BGSprite = new BGSprite('QWQ/2', -1300,-400);
+            var xuankemade2:BGSprite = new BGSprite('QWQ/1', -1300,-400);
+            var xuankemade3:BGSprite = new BGSprite('QWQ/fuck', -1300,-400);
+            gopguy = new BGSprite('sus/gop', -20, 900, 0.7, 0.7, ['gop blue']);
+            xuankemade.scrollFactor.set(1, 1);
+            xuankemade1.scrollFactor.set(1.02, 1.02);
+            xuankemade2.scrollFactor.set(1.06, 1.06);
+            xuankemade3.alpha = 0.35;
+            add(xuankemade);
+            add(xuankemade1);
+            add(xuankemade2);
+            add(gopguy);
+            gopguy.dance(true);
+            add(xuankemade3);
 			case 'school': //Week 6 - Senpai, Roses
 				GameOverSubstate.deathSoundName = 'fnf_loss_sfx-pixel';
 				GameOverSubstate.loopSoundName = 'gameOver-pixel';
@@ -901,14 +932,6 @@ class PlayState extends MusicBeatState
 		add(iconP2);
 		reloadHealthBarColors();
 
-        var creditTxt:FlxText = new FlxText(4,healthBarBG.y + 20,0,("Port by Newbion"), 24);
-        creditTxt.scrollFactor.set();
-        creditTxt.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-        creditTxt.borderColor = FlxColor.BLACK;
-        creditTxt.borderSize = 3;
-        creditTxt.borderStyle = FlxTextBorderStyle.OUTLINE;
-        add(creditTxt);
-
 		scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
 		scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		scoreTxt.scrollFactor.set();
@@ -916,8 +939,8 @@ class PlayState extends MusicBeatState
 		scoreTxt.visible = !ClientPrefs.hideHud;
 		add(scoreTxt);
 
-		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
-		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, somethingchangelol.机器人的文本, 32);
+		botplayTxt.setFormat(Paths.font("中文.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		botplayTxt.scrollFactor.set();
 		botplayTxt.borderSize = 1.25;
 		botplayTxt.visible = cpuControlled;
@@ -1136,25 +1159,19 @@ class PlayState extends MusicBeatState
 
 		if(foundFile) 
 		{
-			if (!runCutscene)
-		    {
-	            FlxG.switchState(new VideoState('assets/videos/' + fileName + '.webm', function()
-	            {
-	                FlxG.switchState(new PlayState());  
-	                runCutscene = true;                          
-	            }));
-		    }
-		    else
-		    {
-				if(endingSong) 
-				{
-					endSong();
-				} 
-				else 
-				{
-					startCountdown();
-				}
-		    }
+            var video = new WebmPlayerS(fileName, true);
+            video.endcallback = () -> {
+                remove(video);
+                if(endingSong) {
+                    endSong();
+                } else {
+                    startCountdown();
+                }
+            }
+            video.setGraphicSize(FlxG.width);
+            video.updateHitbox();
+            add(video);
+            video.play();
 		} 
 		else 
 		{
@@ -1991,10 +2008,10 @@ class PlayState extends MusicBeatState
 
 		super.update(elapsed);
 
-		if(ratingString == '?') {
-			scoreTxt.text = 'Score: ' + songScore + ' | Misses: ' + songMisses + ' | Rating: ' + ratingString;
+		if(ratingName == '?') {
+			scoreTxt.text = 'Score: ' + songScore + ' | Misses: ' + songMisses + ' | Rating: ' + ratingName;
 		} else {
-			scoreTxt.text = 'Score: ' + songScore + ' | Misses: ' + songMisses + ' | Rating: ' + ratingString + ' (' + Math.floor(ratingPercent * 100) + '%)';
+			scoreTxt.text = 'Score: ' + songScore + '  | Misses: ' + songMisses + ' | Rating: ' + ratingName + ' (' + Highscore.floorDecimal(ratingPercent * 100, 2) + '%)' + ' - ' + ratingFC;
 		}
 
 		if(cpuControlled) {
@@ -2934,20 +2951,7 @@ class PlayState extends MusicBeatState
 		deathCounter = 0;
 		seenCutscene = false;
 
-		#if ACHIEVEMENTS_ALLOWED
-		if(achievementObj != null) {
-			return;
-		} else {
-			var achieve:String = checkForAchievement(['week1_nomiss', 'week2_nomiss', 'week3_nomiss', 'week4_nomiss',
-				'week5_nomiss', 'week6_nomiss', 'week7_nomiss', 'ur_bad',
-				'ur_good', 'hype', 'two_keys', 'toastie', 'debugger']);
-
-			if(achieve != null) {
-				startAchievement(achieve);
-				return;
-			}
-		}
-		#end
+		
 
 		var ret:Dynamic = callOnLuas('onEndSong', []);
 
@@ -3054,22 +3058,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	#if ACHIEVEMENTS_ALLOWED
-	var achievementObj:AchievementObject = null;
-	function startAchievement(achieve:String) {
-		achievementObj = new AchievementObject(achieve, camOther);
-		achievementObj.onFinish = achievementEnd;
-		add(achievementObj);
-		trace('Giving achievement ' + achieve);
-	}
-	function achievementEnd():Void
-	{
-		achievementObj = null;
-		if(endingSong && !inCutscene) {
-			endSong();
-		}
-	}
-	#end
+
 
 	public function KillNotes() {
 		while(notes.length > 0) {
@@ -3352,12 +3341,12 @@ class PlayState extends MusicBeatState
 					}
 				}
 
-				#if ACHIEVEMENTS_ALLOWED
+			/*	#if ACHIEVEMENTS_ALLOWED
 				var achieve:String = checkForAchievement(['oversinging']);
 				if (achieve != null) {
 					startAchievement(achieve);
 				}
-				#end
+				#end*/
 			} else if (boyfriend.holdTimer > Conductor.stepCrochet * 0.001 * boyfriend.singDuration && boyfriend.animation.curAnim.name.startsWith('sing')
 			&& !boyfriend.animation.curAnim.name.endsWith('miss'))
 				boyfriend.dance();
@@ -3731,7 +3720,7 @@ class PlayState extends MusicBeatState
 				limoCorpseTwo.visible = false;
 				limoKillingState = 1;
 
-				#if ACHIEVEMENTS_ALLOWED
+				/*#if ACHIEVEMENTS_ALLOWED
 				Achievements.henchmenDeath++;
 				var achieve:String = checkForAchievement(['roadkill_enthusiast']);
 				if (achieve != null) {
@@ -3741,7 +3730,7 @@ class PlayState extends MusicBeatState
 					FlxG.save.flush();
 				}
 				FlxG.log.add('Deaths: ' + Achievements.henchmenDeath);
-				#end
+				#end*/
 			}
 		}
 	}
@@ -3788,6 +3777,12 @@ class PlayState extends MusicBeatState
 	override function stepHit()
 	{
 		super.stepHit();
+	if (curStep == 10 && curSong == 'Impulse')
+{
+ 	//事件代码
+ 	FlxTween.tween(gopguy, {y: gopguy.y - 650}, 10, {ease: FlxEase.linear, startDelay: 0.2});
+ 	
+}
 		if (FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20)
 		{
 			resyncVocals();
@@ -3995,87 +3990,6 @@ class PlayState extends MusicBeatState
 			setOnLuas('ratingName', ratingString);
 		}
 	}
-
-	#if ACHIEVEMENTS_ALLOWED
-	private function checkForAchievement(achievesToCheck:Array<String>):String {
-		for (i in 0...achievesToCheck.length) {
-			var achievementName:String = achievesToCheck[i];
-			if(!Achievements.isAchievementUnlocked(achievementName)) {
-				var unlock:Bool = false;
-				switch(achievementName)
-				{
-					case 'week1_nomiss' | 'week2_nomiss' | 'week3_nomiss' | 'week4_nomiss' | 'week5_nomiss' | 'week6_nomiss' | 'week7_nomiss':
-						if(isStoryMode && campaignMisses + songMisses < 1 && CoolUtil.difficultyString() == 'HARD' && storyPlaylist.length <= 1 && !changedDifficulty && !usedPractice)
-						{
-							var weekName:String = WeekData.getWeekFileName();
-							switch(weekName) //I know this is a lot of duplicated code, but it's easier readable and you can add weeks with different names than the achievement tag
-							{
-								case 'week1':
-									if(achievementName == 'week1_nomiss') unlock = true;
-								case 'week2':
-									if(achievementName == 'week2_nomiss') unlock = true;
-								case 'week3':
-									if(achievementName == 'week3_nomiss') unlock = true;
-								case 'week4':
-									if(achievementName == 'week4_nomiss') unlock = true;
-								case 'week5':
-									if(achievementName == 'week5_nomiss') unlock = true;
-								case 'week6':
-									if(achievementName == 'week6_nomiss') unlock = true;
-								case 'week7':
-									if(achievementName == 'week7_nomiss') unlock = true;
-							}
-						}
-					case 'ur_bad':
-						if(ratingPercent < 0.2 && !practiceMode && !cpuControlled) {
-							unlock = true;
-						}
-					case 'ur_good':
-						if(ratingPercent >= 1 && !usedPractice && !cpuControlled) {
-							unlock = true;
-						}
-					case 'roadkill_enthusiast':
-						if(Achievements.henchmenDeath >= 100) {
-							unlock = true;
-						}
-					case 'oversinging':
-						if(boyfriend.holdTimer >= 20 && !usedPractice) {
-							unlock = true;
-						}
-					case 'hype':
-						if(!boyfriendIdled && !usedPractice) {
-							unlock = true;
-						}
-					case 'two_keys':
-						if(!usedPractice) {
-							var howManyPresses:Int = 0;
-							for (j in 0...keysPressed.length) {
-								if(keysPressed[j]) howManyPresses++;
-							}
-
-							if(howManyPresses <= 2) {
-								unlock = true;
-							}
-						}
-					case 'toastie':
-						if(/*ClientPrefs.framerate <= 60 &&*/ ClientPrefs.lowQuality && !ClientPrefs.globalAntialiasing && !ClientPrefs.imagesPersist) {
-							unlock = true;
-						}
-					case 'debugger':
-						if(Paths.formatToSongPath(SONG.song) == 'test' && !usedPractice) {
-							unlock = true;
-						}
-				}
-
-				if(unlock) {
-					Achievements.unlockAchievement(achievementName);
-					return achievementName;
-				}
-			}
-		}
-		return null;
-	}
-	#end
 
 	var curLight:Int = 0;
 	var curLightEvent:Int = 0;

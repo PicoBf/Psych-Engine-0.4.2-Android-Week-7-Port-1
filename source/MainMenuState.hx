@@ -18,9 +18,23 @@ import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import lime.app.Application;
 import Achievements;
+import haxe.Json;
 import editors.MasterEditorMenu;
 
 using StringTools;
+
+typedef somethingchange =
+{
+	
+	主界面的左下角第一行文本:String,
+	主界面的左下角第二行文本:String,
+	要不要用C键:Bool,
+	机器人的文本:String,
+	开头人物长:Float,
+	开头人物宽:Float,
+	第一次进入游戏时的那个小黑幕中的文字:String
+	
+}
 
 class MainMenuState extends MusicBeatState
 {
@@ -31,12 +45,12 @@ class MainMenuState extends MusicBeatState
 	private var camGame:FlxCamera;
 	private var camAchievement:FlxCamera;
 	
-	var optionShit:Array<String> = ['story_mode', 'freeplay', #if ACHIEVEMENTS_ALLOWED 'awards', #end 'credits', #if !switch 'donate', #end 'options'];
+	var optionShit:Array<String> = ['story_mode', 'freeplay', 'credits', 'options'];
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
 	var camFollowPos:FlxObject;
-
+    var somethingchangelol:somethingchange = Json.parse(Paths.getTextFromFile('images/mainEditor.json'));
 	override function create()
 	{
 		#if desktop
@@ -106,11 +120,11 @@ class MainMenuState extends MusicBeatState
 
 		FlxG.camera.follow(camFollowPos, null, 1);
 
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 12);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 44, 0, somethingchangelol.主界面的左下角第一行文本, 12);
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 24, 0, somethingchangelol.主界面的左下角第二行文本, 12);
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
@@ -119,7 +133,7 @@ class MainMenuState extends MusicBeatState
 
 		changeItem();
 
-		#if ACHIEVEMENTS_ALLOWED
+	/*	#if ACHIEVEMENTS_ALLOWED
 		Achievements.loadAchievements();
 		var leDate = Date.now();
 		if (leDate.getDay() == 5 && leDate.getHours() >= 18) {
@@ -130,23 +144,28 @@ class MainMenuState extends MusicBeatState
 				ClientPrefs.saveSettings();
 			}
 		}
-		#end
+		#end*/
 
 		#if mobileC
-		addVirtualPad(UP_DOWN, A_B_C);
+		 if (somethingchangelol.要不要用C键 == true) {
+      addVirtualPad(UP_DOWN, A_B_C);
+    }
+     else {
+      addVirtualPad(UP_DOWN, A_B);
+    }
 		#end
 
 		super.create();
 	}
 
-	#if ACHIEVEMENTS_ALLOWED
+/*	#if ACHIEVEMENTS_ALLOWED
 	// Unlocks "Freaky on a Friday Night" achievement
 	function giveAchievement() {
 		add(new AchievementObject('friday_night_play', camAchievement));
 		FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
 		trace('Giving achievement "friday_night_play"');
 	}
-	#end
+	#end*/
 
 	var selectedSomethin:Bool = false;
 
@@ -218,8 +237,6 @@ class MainMenuState extends MusicBeatState
 										MusicBeatState.switchState(new StoryMenuState());
 									case 'freeplay':
 										MusicBeatState.switchState(new FreeplayState());
-									case 'awards':
-										MusicBeatState.switchState(new AchievementsMenuState());
 									case 'credits':
 										MusicBeatState.switchState(new CreditsState());
 									case 'options':
